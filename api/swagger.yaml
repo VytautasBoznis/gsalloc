@@ -1,0 +1,204 @@
+---
+swagger: "2.0"
+info:
+  description: "Swagger definition file for gsalloc. gsalloc is a Node.js service\
+    \ providing a REST API to manage game server reservation for online games. "
+  version: "1.0.0"
+  title: "gsalloc"
+  contact:
+    email: "contact@xi4.me"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "localhost:8080"
+basePath: "/gsalloc"
+tags:
+- name: "server"
+  description: "Everything related to game servers"
+schemes:
+- "http"
+paths:
+  /server/register:
+    post:
+      tags:
+      - "server"
+      summary: "Registers server at service"
+      description: ""
+      operationId: "addServer"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "servername"
+        in: "query"
+        description: "Name of the Server that is being registered. Must be unique."
+        required: true
+        type: "string"
+      - name: "ip"
+        in: "query"
+        description: "IPv4 address of gameserver"
+        required: true
+        type: "string"
+      - name: "port"
+        in: "query"
+        description: "Port of gameserver"
+        required: true
+        type: "integer"
+      responses:
+        200:
+          description: "Server was successfully registered."
+        500:
+          description: "Server could not be registered."
+      x-swagger-router-controller: "Server"
+    delete:
+      tags:
+      - "server"
+      summary: "Unregisters server at service."
+      description: ""
+      operationId: "unregisterServer"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "servername"
+        in: "header"
+        description: "Name of the Server that is being unregistered. Must be unique."
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Server was successfully unregistered."
+        404:
+          description: "No Server found that can be unregistered."
+        500:
+          description: "Server could not be unregistered."
+      x-swagger-router-controller: "Server"
+  /server/ready:
+    post:
+      tags:
+      - "server"
+      summary: "Sets Server ready status"
+      description: ""
+      operationId: "setReady"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "servername"
+        in: "query"
+        description: "Name of the Server that is being set ready. Must be unique."
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Server was successfully set ready."
+        500:
+          description: "Server could not be set ready."
+      x-swagger-router-controller: "Server"
+  /server/reset:
+    post:
+      tags:
+      - "server"
+      summary: "Resets server status"
+      description: ""
+      operationId: "resetServer"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "servername"
+        in: "query"
+        description: "Name of the Server that is being reset. Must be unique."
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Server was successfully reset."
+        500:
+          description: "Server could not be reset."
+      x-swagger-router-controller: "Server"
+  /client/alloc:
+    get:
+      tags:
+      - "client"
+      summary: "Requests an available server that is currently registered."
+      description: ""
+      operationId: "allocServer"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "playerID"
+        in: "header"
+        description: "ID of Player that wants to request the server."
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "A GameServer object."
+          schema:
+            $ref: "#/definitions/GameServer"
+        404:
+          description: "No free Server available."
+        500:
+          description: "An error occured when trying to allocate a server."
+      x-swagger-router-controller: "Client"
+    delete:
+      tags:
+      - "client"
+      summary: "Stops a server request"
+      description: ""
+      operationId: "deallocServer"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "playerID"
+        in: "header"
+        description: "ID of Player that wants to request the server."
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Request was successfully canceled."
+        404:
+          description: "Could no longer cancel request."
+        500:
+          description: "An error occured when trying to cancel the request."
+      x-swagger-router-controller: "Client"
+  /client/ready:
+    get:
+      tags:
+      - "client"
+      summary: "Requests the current ready status of a Server."
+      description: ""
+      operationId: "getReadyStatus"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "servername"
+        in: "header"
+        description: "Name of Server which should be queried."
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "A Gameserver object."
+          schema:
+            $ref: "#/definitions/GameServer"
+        404:
+          description: "No matching Server found."
+        500:
+          description: "An error occured when trying to query a server."
+      x-swagger-router-controller: "Client"
+definitions:
+  GameServer:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      ip:
+        type: "string"
+      port:
+        type: "integer"
+      ownerid:
+        type: "string"
+  Player:
+    type: "object"
+    properties:
+      userid:
+        type: "string"
