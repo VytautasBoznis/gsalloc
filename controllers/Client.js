@@ -15,3 +15,7 @@ module.exports.deallocServer = function deallocServer (req, res, next) {
 module.exports.getReadyStatus = function getReadyStatus (req, res, next) {
   Client.getReadyStatus(req.swagger.params, res, next);
 };
+
+module.exports.registerClient = function registerClient (req, res, next) {
+  Client.registerClient(req.swagger.params, res, next);
+};

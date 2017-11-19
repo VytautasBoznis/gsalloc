@@ -28,17 +28,12 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: servername
-          in: query
-          description: Name of the Server that is being registered. Must be unique.
-          required: true
-          type: string
-        - name: ip
+        - name: server_ip
           in: query
           description: IPv4 address of gameserver
           required: true
           type: string
-        - name: port
+        - name: server_port
           in: query
           description: Port of gameserver
           required: true
@@ -57,9 +52,9 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: servername
+        - name: server_id
           in: header
-          description: Name of the Server that is being unregistered. Must be unique.
+          description: ID of the Server that is being unregistered. Must be unique.
           required: true
           type: string
       responses:
@@ -79,9 +74,9 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: servername
+        - name: server_id
           in: query
-          description: Name of the Server that is being set ready. Must be unique.
+          description: ID of the Server that is being set ready. Must be unique.
           required: true
           type: string
       responses:
@@ -99,16 +94,38 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: servername
+        - name: server_id
           in: query
-          description: Name of the Server that is being reset. Must be unique.
+          description: ID of the Server that is being reset. Must be unique.
           required: true
           type: string
       responses:
         '200':
           description: Server was successfully reset.
         '500':
-          description: Server could not be reset.
+          description: Server could not be reset.  
+  /client/register:
+    post:
+      tags:
+        - client
+      summary: Registers a client at gsalloc.
+      description: ''
+      operationId: registerClient
+      produces:
+        - application/json
+      parameters:
+        - name: client_customid
+          in: header
+          description: ID of client.
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successfully registered.
+          schema:
+            $ref: '#/definitions/Client'
+        '500':
+          description: An error occured when trying to register the player.
   /client/alloc:
     get:
       tags:
@@ -119,10 +136,15 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: playerID
+        - name: client_id
           in: header
-          description: ID of Player that wants to request the server.
-          required: true
+          description: Real ID of Player that wants to request the server.
+          required: false
+          type: string
+        - name: client_customid
+          in: header
+          description: Custom ID of Player that wants to request the server.
+          required: false
           type: string
       responses:
         '200':
@@ -142,10 +164,15 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: playerID
+        - name: client_id
           in: header
-          description: ID of Player that wants to request the server.
-          required: true
+          description: Real ID of Player that wants to request the server.
+          required: false
+          type: string
+        - name: client_customid
+          in: header
+          description: Custom ID of Player that wants to request the server.
+          required: false
           type: string
       responses:
         '200':
@@ -164,9 +191,9 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: servername
+        - name: server_id
           in: header
-          description: Name of Server which should be queried.
+          description: ID of Server which should be queried.
           required: true
           type: string
       responses:
@@ -178,20 +205,147 @@ paths:
           description: No matching Server found.
         '500':
           description: An error occured when trying to query a server.
+  /party/create:
+    post:
+      tags:
+        - party
+      summary: Creates a new party
+      description: ''
+      operationId: createParty
+      produces:
+        - application/json
+      parameters:
+        - name: party_slots
+          in: header
+          description: Amount of players to fill this party with
+          required: true
+          type: integer
+      responses:
+        '200':
+          description: A Party Object
+          schema:
+            $ref: '#/definitions/Party'
+        '500':
+          description: An error occured when trying to create a party.
+  /party/clients:
+    post:
+      tags:
+        - party
+      summary: Adds a client ID to a party
+      description: ''
+      operationId: addPartyClient
+      produces:
+        - application/json
+      parameters:
+        - name: party_id
+          in: header
+          description: ID of the Party.
+          required: true
+          type: string
+        - name: client_id
+          in: header
+          description: Real ID of Player that wants to request the server.
+          required: false
+          type: string
+        - name: client_customid
+          in: header
+          description: Custom ID of Player that wants to request the server.
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successfully added the client to the party
+          schema:
+            $ref: '#/definitions/Party'
+        '404':
+          description: Could not find either the Party or Client ID in the database.
+        '500':
+          description: An error occured when trying to add a client to a party.
+    delete:
+      tags:
+        - party
+      summary: Deletes a client ID to a party
+      description: ''
+      operationId: deletePartyClient
+      produces:
+        - application/json
+      parameters:
+        - name: party_id
+          in: header
+          description: ID of the Party.
+          required: true
+          type: string
+        - name: client_id
+          in: header
+          description: Real ID of Player that wants to request the server.
+          required: false
+          type: string
+        - name: client_customid
+          in: header
+          description: Custom ID of Player that wants to request the server.
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successfully removed the client from the party
+          schema:
+            $ref: '#/definitions/Party'
+        '404':
+          description: Could not find either the Party or Client ID in the database.
+        '500':
+          description: An error occured when trying to remove a client from a party.
+    get:
+      tags:
+        - party
+      summary: Gets all clients in a party
+      description: ''
+      operationId: getPartyClients
+      produces:
+        - application/json
+      parameters:
+        - name: party_id
+          in: header
+          description: ID of the Party.
+          required: true
+          type: integer
+      responses:
+        '200':
+          description: A Party Object
+          schema:
+            $ref: '#/definitions/Party'
+        '404':
+          description: Could not find the Party ID in the database.
+        '500':
+          description: An error occured when trying to get the Party information.
 definitions:
   GameServer:
     type: object
     properties:
-      name:
+      SERVER_id:
         type: string
-      ip:
+      SERVER_ip:
         type: string
-      port:
+      SERVER_port:
         type: integer
-      ownerid:
+      SERVER_ownerid:
         type: string
-  Player:
+      SERVER_isReady:
+        type: boolean
+  Client:
     type: object
     properties:
-      userid:
+      CLIENT_id:
         type: string
+      CLIENT_customid:
+        type: string
+  Party:
+    type: object
+    properties:
+      PARTY_id:
+        type: string
+      PARTY_slots:
+        type: integer
+      PARTY_clients:
+        type: array
+        items:
+          $ref: '#/definitions/Client'

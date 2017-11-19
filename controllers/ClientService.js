@@ -8,7 +8,8 @@ exports.allocServer = function(args, res, next)
 	 * Requests an available server that is currently registered.
 	 * 
 	 *
-	 * playerID String ID of Player that wants to request the server.
+	 * client_id String Real ID of Player that wants to request the server. (optional)
+	 * client_customid String Custom ID of Player that wants to request the server. (optional)
 	 * returns GameServer
 	 **/
 	
@@ -16,7 +17,7 @@ exports.allocServer = function(args, res, next)
 
 	db.find(
 	{
-		ownerid: '0x0',		
+		SERVER_ownerid: '0x0',		
 	}, function(err, servers)
 	{
 		var serverFound = true;		
@@ -36,7 +37,7 @@ exports.allocServer = function(args, res, next)
 			{
 				$set:
 				{
-					ownerid: args.playerID.value 
+					SERVER_ownerid: args.playerID.value 
 				}
 			},
 			{}, function(err, numReplaced)
@@ -70,7 +71,8 @@ exports.deallocServer = function(args, res, next)
 	 * Stops a server request
 	 * 
 	 *
-	 * playerID String ID of Player that wants to request the server.
+	 * client_id String Real ID of Player that wants to request the server. (optional)
+	 * client_customid String Custom ID of Player that wants to request the server. (optional)
 	 * no response value expected for this operation
 	 **/
 
@@ -115,7 +117,7 @@ exports.getReadyStatus = function(args, res, next) {
 	 * Requests the current ready status of a Server.
 	 * 
 	 *
-	 * servername String Name of Server which should be queried.
+	 * server_id String ID of Server which should be queried.
 	 * returns GameServer
 	 **/
 	var db = gSwagger.sql;
@@ -141,3 +143,15 @@ exports.getReadyStatus = function(args, res, next) {
 		}
 	});
 }
+
+exports.registerClient = function(args, res, next) {
+	/**
+	 * Registers a client at gsalloc.
+	 * 
+	 *
+	 * client_customid String ID of client. (optional)
+	 * returns Client
+	 **/
+	res.end();
+  }
+  
