@@ -30,15 +30,18 @@ exports.addServer = function(args, res, next) {
 		}		
 		if(!serverFound)
 		{				
-			var newServer = {				
+			var newServer = 
+			{				
 				SERVER_ip: args.server_ip.value,
 				SERVER_port: args.server_port.value,
 				SERVER_ownerid: '0x0',
 				SERVER_isReady: false
 			}
 
-			db.insert(newServer, function(err, insertedServer) {
-				if (err == null) {
+			db.insert(newServer, function(err, insertedServer) 
+			{
+				if (err == null) 
+				{
 					console.log('\x1b[33m%s\x1b[0m', 'INFO: Added a new Server with the following ');
 					console.log('\x1b[33m%s\x1b[0m', 'RAW:', insertedServer);
 
@@ -65,6 +68,54 @@ exports.resetServer = function(args, res, next) {
 	 * server_id String ID of the Server that is being reset. Must be unique.
 	 * no response value expected for this operation
 	 **/
+
+	var db = gSwagger.sql;
+	
+	db.find(
+	{
+		_id: args.server_id.value
+	}, function(err, servers)
+	{
+		var serverFound = true;		
+		if(!servers[0])
+		{			
+			console.log('\x1b[31m%s\x1b[0m', 'ERROR:', 'An error occured when trying to find a server called', args.server_id.value, '- No Server found!');							
+			serverFound = false;
+			res.statusCode = 404;
+			res.end();						
+		}		
+		if(serverFound)
+		{
+			db.update(
+			{
+				_id: args.server_id.value
+			},
+			{
+				SERVER_ownerid: '0x0',
+				SERVER_isReady: false,
+			},
+			{}, function(err, numReplaced)
+			{
+				if (err == null) 
+				{
+					console.log('\x1b[33m%s\x1b[0m', 'INFO:', 'Removed Server Assignment of', args.server_id.value);
+					console.log('\x1b[33m%s\x1b[0m', 'INFO:', 'Set Server Ready Status of', args.server_id.value, 'to false');				
+				}
+				else
+				{
+					console.log('\x1b[31m%s\x1b[0m', 'ERROR:', 'An error occured when trying to reset the server.');
+					console.log('\x1b[33m%s\x1b[0m', 'RAW:', args.server_id.value);
+					console.log('\x1b[33m%s\x1b[0m', 'RAW ERROR:', err);
+
+					res.statusCode = 500;
+					res.end();
+				}
+			});
+	
+			res.setHeader('Content-Type', 'application/json');
+			res.end(JSON.stringify(servers[0]));
+		}
+	}); 
 	res.end();
 }
 
@@ -90,18 +141,20 @@ exports.unregisterServer = function(args, res, next) {
 
 	var db = gSwagger.sql;
 	db.remove({
-		name: args.servername.value
+		_id: args.server_id.value
 	}, {
 		multi: true
-	}, function(err, numRemoved) {
-		if (err == null) {
+	}, function(err, numRemoved) 
+	{
+		if (err == null) 
+		{
 			if(numRemoved == 0)
 			{
-				console.log('\x1b[33m%s\x1b[0m', 'INFO:', 'No Server named', args.servername.value, 'found.');
+				console.log('\x1b[33m%s\x1b[0m', 'INFO:', 'No Server with ID', args.server_id.value, 'found.');
 				res.statusCode = 404;
 				res.end();	
 			} else {
-				console.log('\x1b[33m%s\x1b[0m', 'INFO:', 'Removed', numRemoved, 'entries from Database. (', args.servername.value, ')');
+				console.log('\x1b[33m%s\x1b[0m', 'INFO:', 'Removed', numRemoved, 'entries for ID', args.server_id.value, 'from Database.');
 				res.statusCode = 200;
 				res.end();
 			}
